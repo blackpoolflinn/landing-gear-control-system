@@ -1,5 +1,6 @@
 from enum import Enum, auto
 from dataclasses import dataclass
+from config_loader import load_config, Config
 import time
 
 class GearState(Enum):
@@ -13,8 +14,8 @@ class GearState(Enum):
 class GearLeg:
     """Represents a single landing gear leg with state and timing."""
     name: str
-    deploy_time_s: float = 2.5
-    retract_time_s: float = 2.5
+    deploy_time_s: float
+    retract_time_s: float
     state: GearState = GearState.UP_LOCKED
     timer_s: float = 0.0
 
@@ -33,17 +34,20 @@ class GearLeg:
         """Indicates if the gear is currently transitioning."""
         return self.state in (GearState.TRANSITIONING_DOWN, GearState.TRANSITIONING_UP)
 
-    def command(self, direction: str) -> bool:
+    def command(self, direction: str, allow_from: list[str]) -> bool:
         """
         direction: "DOWN" or "UP"
         Starts a transition if allowed, does NOT complete it instantly.
         """
-        if direction == "DOWN" and self.state == GearState.UP_LOCKED:
+        if self.state.name not in allow_from:
+            return False
+
+        if direction == "DOWN":
             self.state = GearState.TRANSITIONING_DOWN
             self.timer_s = 0.0
             return True
 
-        if direction == "UP" and self.state == GearState.DOWN_LOCKED:
+        if direction == "UP":
             self.state = GearState.TRANSITIONING_UP
             self.timer_s = 0.0
             return True
@@ -51,9 +55,6 @@ class GearLeg:
         return False
 
     def tick(self, dt_s: float) -> None:
-        """
-        Advances simulated time and completes transitions once duration is reached.
-        """
         if self.state == GearState.TRANSITIONING_DOWN:
             self.timer_s += dt_s
             if self.timer_s >= self.deploy_time_s:
@@ -66,9 +67,14 @@ class GearLeg:
 
 
 class LandingGearController:
-    """Controls all landing gear legs and manages their states."""
-    def __init__(self):
-        self.legs = [GearLeg("nose"), GearLeg("left"), GearLeg("right")]
+    def __init__(self, config: Config):
+        self.config = config
+        t = config.timings
+        self.legs = [
+            GearLeg("nose", t.deploy_time_s, t.retract_time_s),
+            GearLeg("left", t.deploy_time_s, t.retract_time_s),
+            GearLeg("right", t.deploy_time_s, t.retract_time_s),
+        ]
 
     def log_leg(self, leg: GearLeg, msg: str) -> None:
         """Logs the state of a leg with a message."""
@@ -78,9 +84,12 @@ class LandingGearController:
         )
 
     def command_all(self, direction: str) -> None:
-        """Sends command to all legs and logs the result."""
+        interlocks = self.config.interlocks
+        allow_from = interlocks.allow_down_from if direction == "DOWN" else interlocks.allow_up_from
+        allow_from = allow_from or []
+
         for leg in self.legs:
-            ok = leg.command(direction)
+            ok = leg.command(direction, allow_from)
             self.log_leg(leg, f"{direction} command accepted" if ok else f"{direction} command rejected")
 
     def tick(self, dt_s: float) -> None:
@@ -93,7 +102,8 @@ class LandingGearController:
 
 
 if __name__ == "__main__":
-    lgcs = LandingGearController()
+    config = load_config("config.json")
+    lgcs = LandingGearController(config)
 
     lgcs.command_all("DOWN")
     for _ in range(6):

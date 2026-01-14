@@ -1,0 +1,13 @@
+{
+  "timings": {
+    "deploy_time_s": 2.5,
+    "retract_time_s": 2.5
+  },
+  "interlocks": {
+    "allow_down_from": ["UP_LOCKED"],
+    "allow_up_from": ["DOWN_LOCKED"]
+  },
+  "logging": {
+    "level": "INFO"
+  }
+}
