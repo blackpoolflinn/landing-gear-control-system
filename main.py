@@ -102,14 +102,14 @@ class LandingGearController:
 
 
 if __name__ == "__main__":
-    config = load_config("config.json")
+    config = load_config("configs/config.json")
     lgcs = LandingGearController(config)
 
     lgcs.command_all("DOWN")
     for _ in range(6):
         lgcs.tick(0.5)
         time.sleep(0.5)
-
+    
     lgcs.command_all("UP")
     for _ in range(6):
         lgcs.tick(0.5)

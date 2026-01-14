@@ -25,7 +25,7 @@ class Config:
     interlocks: InterlocksConfig = InterlocksConfig(["UP_LOCKED"], ["DOWN_LOCKED"])
     logging: LoggingConfig = LoggingConfig()
 
-def load_config(path: str = "config.json") -> Config:
+def load_config(path: str = "configs/config.json") -> Config:
     log(f"Loading configuration from {path}")
 
     with open(path, "r", encoding="utf-8") as f:
