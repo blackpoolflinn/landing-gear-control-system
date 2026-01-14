@@ -1,42 +1,59 @@
 from enum import Enum, auto
+from dataclasses import dataclass
+import time
 
 class GearState(Enum):
-    """States of the landing gear system."""
+    """States of a landing gear leg."""
     UP_LOCKED = auto()
     TRANSITIONING_DOWN = auto()
-    TRANSITIONING_UP = auto()
     DOWN_LOCKED = auto()
+    TRANSITIONING_UP = auto()
 
+@dataclass
 class GearLeg:
-    """
-    Gear leg with time-based transitions.
-    Commands start motion; tick(dt) completes it once enough time has passed.
-    """
-    def __init__(self, name: str, deploy_time_s: float = 2.5, retract_time_s: float = 2.5):
-        self.name = name
-        self.state = GearState.UP_LOCKED
-        self.deploy_time_s = deploy_time_s
-        self.retract_time_s = retract_time_s
-        self.timer_s = 0.0
+    """Represents a single landing gear leg with state and timing."""
+    name: str
+    deploy_time_s: float = 2.5
+    retract_time_s: float = 2.5
+    state: GearState = GearState.UP_LOCKED
+    timer_s: float = 0.0
 
-    def command_down(self) -> bool:
-        """Sends command to lower the gear leg and returns True if command accepted."""
-        if self.state != GearState.UP_LOCKED:
-            return False
-        self.state = GearState.TRANSITIONING_DOWN
-        self.timer_s = 0.0
-        return True
+    @property
+    def uplock_sensor(self) -> bool:
+        """Indicates if the gear is locked in the UP position."""
+        return self.state == GearState.UP_LOCKED
 
-    def command_up(self) -> bool:
-        """Sends command to raise the gear leg and returns True if command accepted."""
-        if self.state != GearState.DOWN_LOCKED:
-            return False
-        self.state = GearState.TRANSITIONING_UP
-        self.timer_s = 0.0
-        return True
+    @property
+    def downlock_sensor(self) -> bool:
+        """Indicates if the gear is locked in the DOWN position."""
+        return self.state == GearState.DOWN_LOCKED
+
+    @property
+    def in_transit_sensor(self) -> bool:
+        """Indicates if the gear is currently transitioning."""
+        return self.state in (GearState.TRANSITIONING_DOWN, GearState.TRANSITIONING_UP)
+
+    def command(self, direction: str) -> bool:
+        """
+        direction: "DOWN" or "UP"
+        Starts a transition if allowed, does NOT complete it instantly.
+        """
+        if direction == "DOWN" and self.state == GearState.UP_LOCKED:
+            self.state = GearState.TRANSITIONING_DOWN
+            self.timer_s = 0.0
+            return True
+
+        if direction == "UP" and self.state == GearState.DOWN_LOCKED:
+            self.state = GearState.TRANSITIONING_UP
+            self.timer_s = 0.0
+            return True
+
+        return False
 
     def tick(self, dt_s: float) -> None:
-        """Advances the state by dt_s seconds."""
+        """
+        Advances simulated time and completes transitions once duration is reached.
+        """
         if self.state == GearState.TRANSITIONING_DOWN:
             self.timer_s += dt_s
             if self.timer_s >= self.deploy_time_s:
@@ -49,26 +66,25 @@ class GearLeg:
 
 
 class LandingGearController:
+    """Controls all landing gear legs and manages their states."""
     def __init__(self):
         self.legs = [GearLeg("nose"), GearLeg("left"), GearLeg("right")]
 
-    def log_leg(self, leg: GearLeg, message: str) -> None:
-        print(f"[{leg.name.upper()} | {leg.state.name}] {message}")
+    def log_leg(self, leg: GearLeg, msg: str) -> None:
+        """Logs the state of a leg with a message."""
+        print(
+            f"[{leg.name.upper()}] {msg} | {leg.state.name} "
+            f"(uplock={leg.uplock_sensor}, downlock={leg.downlock_sensor}, transit={leg.in_transit_sensor})"
+        )
 
-    def command_all_down(self) -> None:
-        """Sends command to lower all landing gear legs."""
+    def command_all(self, direction: str) -> None:
+        """Sends command to all legs and logs the result."""
         for leg in self.legs:
-            ok = leg.command_down()
-            self.log_leg(leg, "DOWN command accepted" if ok else "DOWN command rejected")
-
-    def command_all_up(self) -> None:
-        """Sends command to raise all landing gear legs."""
-        for leg in self.legs:
-            ok = leg.command_up()
-            self.log_leg(leg, "UP command accepted" if ok else "UP command rejected")
+            ok = leg.command(direction)
+            self.log_leg(leg, f"{direction} command accepted" if ok else f"{direction} command rejected")
 
     def tick(self, dt_s: float) -> None:
-        """Advances the state of all legs by dt_s seconds."""
+        """Advances time for all legs and logs state changes."""
         for leg in self.legs:
             before = leg.state
             leg.tick(dt_s)
@@ -79,10 +95,12 @@ class LandingGearController:
 if __name__ == "__main__":
     lgcs = LandingGearController()
 
-    lgcs.command_all_down()
-    for _ in range(6):  # 6 x 0.5s = 3.0s simulated
-        lgcs.tick(0.5)
-
-    lgcs.command_all_up()
+    lgcs.command_all("DOWN")
     for _ in range(6):
         lgcs.tick(0.5)
+        time.sleep(0.5)
+
+    lgcs.command_all("UP")
+    for _ in range(6):
+        lgcs.tick(0.5)
+        time.sleep(0.5)
