@@ -7,36 +7,53 @@ class GearState(Enum):
     TRANSITIONING_UP = auto()
     DOWN_LOCKED = auto()
 
-class LandingGearController:
-    """A simple landing gear control system."""
-    def __init__(self):
+class GearLeg:
+    """Represents a single landing gear leg."""
+    def __init__(self, name: str):
+        self.name = name
         self.state = GearState.UP_LOCKED
-    
-    def log(self, message):
-        """Log the current state and message."""
-        print(f"[{self.state.name}] {message}")
 
-    def command_gear_down(self):
-        """Command to lower the landing gear."""
-        if self.state == GearState.UP_LOCKED:
-            self.state = GearState.TRANSITIONING_DOWN
-            self.log("Gear deploying")
-            self.state = GearState.DOWN_LOCKED
-            self.log("Gear locked down")
-        else:
-            self.log("Command rejected")
-    
-    def command_gear_up(self):
-        """Command to raise the landing gear."""
-        if self.state == GearState.DOWN_LOCKED:
-            self.state = GearState.TRANSITIONING_UP
-            self.log("Gear retracting")
-            self.state = GearState.UP_LOCKED
-            self.log("Gear locked up")
-        else:
-            self.log("Command rejected")
+    def command_down(self) -> bool:
+        if self.state != GearState.UP_LOCKED:
+            return False
+        self.state = GearState.TRANSITIONING_DOWN
+        self.state = GearState.DOWN_LOCKED
+        return True
 
-# Example usage
-controller = LandingGearController()
-controller.command_gear_down()
-controller.command_gear_up()
+    def command_up(self) -> bool:
+        if self.state != GearState.DOWN_LOCKED:
+            return False
+        self.state = GearState.TRANSITIONING_UP
+        self.state = GearState.UP_LOCKED
+        return True
+
+
+class LandingGearController:
+    """Controls three independent legs (nose/left/right)."""
+    def __init__(self):
+        self.legs = {
+            "nose": GearLeg("nose"),
+            "left": GearLeg("left"),
+            "right": GearLeg("right"),
+        }
+
+    def log_leg(self, leg: GearLeg, message: str) -> None:
+        print(f"[{leg.name.upper()} | {leg.state.name}] {message}")
+
+    def command_gear_down(self) -> None:
+        """Sends command to lower all landing gear legs."""
+        for leg in self.legs.values():
+            ok = leg.command_down()
+            self.log_leg(leg, "DOWN command accepted" if ok else "DOWN command rejected")
+
+    def command_gear_up(self) -> None:
+        """Sends command to raise all landing gear legs."""
+        for leg in self.legs.values():
+            ok = leg.command_up()
+            self.log_leg(leg, "UP command accepted" if ok else "UP command rejected")
+
+
+if __name__ == "__main__":
+    lgcs = LandingGearController()
+    lgcs.command_gear_down()
+    lgcs.command_gear_up()
