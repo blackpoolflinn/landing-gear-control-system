@@ -2,6 +2,7 @@ from enum import Enum, auto
 from dataclasses import dataclass
 from config_loader import load_config, Config
 import time
+import logging
 
 class GearState(Enum):
     """States of a landing gear leg."""
@@ -78,7 +79,8 @@ class LandingGearController:
 
     def log_leg(self, leg: GearLeg, msg: str) -> None:
         """Logs the state of a leg with a message."""
-        print(
+        logger = logging.getLogger(__name__)
+        logger.info(
             f"[{leg.name.upper()}] {msg} | {leg.state.name} "
             f"(uplock={leg.uplock_sensor}, downlock={leg.downlock_sensor}, transit={leg.in_transit_sensor})"
         )
@@ -103,6 +105,15 @@ class LandingGearController:
 
 if __name__ == "__main__":
     config = load_config("configs/config.json")
+    
+    # Configure logging to write to file
+    logging.basicConfig(
+        level=getattr(logging, config.logging.level, logging.INFO),
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        filename='landing_gear.log',
+        filemode='a'
+    )
+    
     lgcs = LandingGearController(config)
 
     lgcs.command_all("DOWN")

@@ -1,9 +1,9 @@
 import json
+import logging
 from dataclasses import dataclass
 from typing import List, Optional
 
-def log(msg: str) -> None:
-    print(f"[CONFIG] {msg}")
+logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class TimingsConfig:
@@ -26,7 +26,7 @@ class Config:
     logging: LoggingConfig = LoggingConfig()
 
 def load_config(path: str = "configs/config.json") -> Config:
-    log(f"Loading configuration from {path}")
+    logger.info(f"Loading configuration from {path}")
 
     with open(path, "r", encoding="utf-8") as f:
         raw = json.load(f)
@@ -39,33 +39,33 @@ def load_config(path: str = "configs/config.json") -> Config:
     try:
         deploy_time = float(timings_raw.get("deploy_time_s", 2.5))
     except (TypeError, ValueError):
-        log("Invalid deploy_time_s, falling back to 2.5s")
+        logger.warning("Invalid deploy_time_s, falling back to 2.5s")
         deploy_time = 2.5
 
     try:
         retract_time = float(timings_raw.get("retract_time_s", 2.5))
     except (TypeError, ValueError):
-        log("Invalid retract_time_s, falling back to 2.5s")
+        logger.warning("Invalid retract_time_s, falling back to 2.5s")
         retract_time = 2.5
 
-    log(f"Deploy time set to {deploy_time}s")
-    log(f"Retract time set to {retract_time}s")
+    logger.info(f"Deploy time set to {deploy_time}s")
+    logger.info(f"Retract time set to {retract_time}s")
 
     # verify and set interlocks
     allow_down_from = interlocks_raw.get("allow_down_from", ["UP_LOCKED"])
     allow_up_from = interlocks_raw.get("allow_up_from", ["DOWN_LOCKED"])
 
     if not isinstance(allow_down_from, list):
-        log("allow_down_from invalid, using default ['UP_LOCKED']")
+        logger.warning("allow_down_from invalid, using default ['UP_LOCKED']")
         allow_down_from = ["UP_LOCKED"]
 
     if not isinstance(allow_up_from, list):
-        log("allow_up_from invalid, using default ['DOWN_LOCKED']")
+        logger.warning("allow_up_from invalid, using default ['DOWN_LOCKED']")
         allow_up_from = ["DOWN_LOCKED"]
 
     log_level = logging_raw.get("level", "INFO")
 
-    log(f"Logging level set to {log_level}")
+    logger.info(f"Logging level set to {log_level}")
 
     return Config(
         timings=TimingsConfig(deploy_time_s=deploy_time, retract_time_s=retract_time),
