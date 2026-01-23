@@ -17,6 +17,7 @@ class TestGearLeg(unittest.TestCase):
         self.assertTrue(leg.in_transit_sensor)
 
     def test_tick_completes_deploy(self):
+        """Test that tick advances time and completes deploy."""
         leg = GearLeg("nose", deploy_time_s=1.0, retract_time_s=1.0)
 
         leg.command("DOWN", allow_from=["UP_LOCKED"])
