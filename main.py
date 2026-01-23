@@ -103,9 +103,57 @@ class LandingGearController:
                 self.log_leg(leg, f"Transition complete: {before.name} -> {leg.state.name}")
 
 
+def print_status(lgcs):
+    """Prints a neat status line for all legs."""
+    status_strs = []
+    for leg in lgcs.legs:
+        # Simple state indicators
+        state_sym = " [ ]"  # Default
+        if leg.state == GearState.DOWN_LOCKED:
+            state_sym = " [G]"  # Green/Down
+        elif leg.state == GearState.UP_LOCKED:
+            state_sym = " [ ]"  # Up
+        else:
+            state_sym = " [!]"  # Transit/Red
+
+        status_strs.append(f"{leg.name.upper()}:{state_sym} {leg.state.name}")
+    print(" | ".join(status_strs))
+
+
+def run_cockpit():
+    """Interactive CLI for landing gear control."""
+    config = load_config("configs/config.json")
+    lgcs = LandingGearController(config)
+
+    print("\n--- LANDING GEAR COCKPIT ---")
+    print("Commands: [d]own, [u]p, [q]uit")
+    print("Press [Enter] to advance time (0.5s step)\n")
+
+    while True:
+        print_status(lgcs)
+
+        try:
+            cmd = input("CMD > ").strip().lower()
+        except KeyboardInterrupt:
+            break
+
+        if cmd == "q":
+            print("Exiting cockpit.")
+            break
+        elif cmd == "d":
+            print(">> COMMAND: GEAR DOWN")
+            lgcs.command_all("DOWN")
+        elif cmd == "u":
+            print(">> COMMAND: GEAR UP")
+            lgcs.command_all("UP")
+
+        # Advance simulation time
+        lgcs.tick(0.5)
+
+
 if __name__ == "__main__":
     config = load_config("configs/config.json")
-    
+
     # Configure logging to write to file
     logging.basicConfig(
         level=getattr(logging, config.logging.level, logging.INFO),
@@ -113,15 +161,5 @@ if __name__ == "__main__":
         filename='landing_gear.log',
         filemode='a'
     )
-    
-    lgcs = LandingGearController(config)
 
-    lgcs.command_all("DOWN")
-    for _ in range(6):
-        lgcs.tick(0.5)
-        time.sleep(0.5)
-    
-    lgcs.command_all("UP")
-    for _ in range(6):
-        lgcs.tick(0.5)
-        time.sleep(0.5)
+    run_cockpit()

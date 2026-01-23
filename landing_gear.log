@@ -10,3 +10,19 @@
 2026-01-23 14:49:38,497 - __main__ - INFO - [NOSE] Transition complete: TRANSITIONING_UP -> UP_LOCKED | UP_LOCKED (uplock=True, downlock=False, transit=False)
 2026-01-23 14:49:38,497 - __main__ - INFO - [LEFT] Transition complete: TRANSITIONING_UP -> UP_LOCKED | UP_LOCKED (uplock=True, downlock=False, transit=False)
 2026-01-23 14:49:38,497 - __main__ - INFO - [RIGHT] Transition complete: TRANSITIONING_UP -> UP_LOCKED | UP_LOCKED (uplock=True, downlock=False, transit=False)
+2026-01-23 15:10:31,380 - config_loader - INFO - Loading configuration from configs/config.json
+2026-01-23 15:10:31,381 - config_loader - INFO - Deploy time set to 2.5s
+2026-01-23 15:10:31,381 - config_loader - INFO - Retract time set to 2.5s
+2026-01-23 15:10:31,381 - config_loader - INFO - Logging level set to INFO
+2026-01-23 15:10:35,960 - __main__ - INFO - [NOSE] DOWN command accepted | TRANSITIONING_DOWN (uplock=False, downlock=False, transit=True)
+2026-01-23 15:10:35,960 - __main__ - INFO - [LEFT] DOWN command accepted | TRANSITIONING_DOWN (uplock=False, downlock=False, transit=True)
+2026-01-23 15:10:35,960 - __main__ - INFO - [RIGHT] DOWN command accepted | TRANSITIONING_DOWN (uplock=False, downlock=False, transit=True)
+2026-01-23 15:10:45,442 - __main__ - INFO - [NOSE] Transition complete: TRANSITIONING_DOWN -> DOWN_LOCKED | DOWN_LOCKED (uplock=False, downlock=True, transit=False)
+2026-01-23 15:10:45,442 - __main__ - INFO - [LEFT] Transition complete: TRANSITIONING_DOWN -> DOWN_LOCKED | DOWN_LOCKED (uplock=False, downlock=True, transit=False)
+2026-01-23 15:10:45,442 - __main__ - INFO - [RIGHT] Transition complete: TRANSITIONING_DOWN -> DOWN_LOCKED | DOWN_LOCKED (uplock=False, downlock=True, transit=False)
+2026-01-23 15:10:56,389 - __main__ - INFO - [NOSE] UP command accepted | TRANSITIONING_UP (uplock=False, downlock=False, transit=True)
+2026-01-23 15:10:56,389 - __main__ - INFO - [LEFT] UP command accepted | TRANSITIONING_UP (uplock=False, downlock=False, transit=True)
+2026-01-23 15:10:56,389 - __main__ - INFO - [RIGHT] UP command accepted | TRANSITIONING_UP (uplock=False, downlock=False, transit=True)
+2026-01-23 15:10:59,565 - __main__ - INFO - [NOSE] Transition complete: TRANSITIONING_UP -> UP_LOCKED | UP_LOCKED (uplock=True, downlock=False, transit=False)
+2026-01-23 15:10:59,565 - __main__ - INFO - [LEFT] Transition complete: TRANSITIONING_UP -> UP_LOCKED | UP_LOCKED (uplock=True, downlock=False, transit=False)
+2026-01-23 15:10:59,565 - __main__ - INFO - [RIGHT] Transition complete: TRANSITIONING_UP -> UP_LOCKED | UP_LOCKED (uplock=True, downlock=False, transit=False)
