@@ -1,7 +1,63 @@
+"""
+Landing Gear Control System
+
+Author: Flinn Mort
+Last Modified: 2026-01-23
+
+REQUIREMENTS:
+
+REQ-001: Gear Leg State Machine (Related: test_down_command_starts_transition)
+    - Implement GearLeg class with defined states: UP_LOCKED, DOWN_LOCKED, TRANSITIONING_DOWN, TRANSITIONING_UP
+    - Support transition between states via command() method
+    - Support DOWN commands when in allow_from list
+    - Support UP commands when in allow_from list
+    - Modified: 2026-01-14 by Flinn Mort
+
+REQ-002: Gear Leg Transition Timing (Related: test_tick_completes_deploy)
+    - Implement tick() method to advance timer based on elapsed time (dt_s)
+    - Complete DOWN transition after deploy_time_s seconds
+    - Complete UP transition after retract_time_s seconds
+    - Support configurable deploy and retract times
+    - Modified: 2026-01-14 by Flinn Mort
+
+REQ-003: Gear Leg Sensors (Related: test_down_command_starts_transition, test_tick_completes_deploy)
+    - Implement uplock_sensor property (True when UP_LOCKED)
+    - Implement downlock_sensor property (True when DOWN_LOCKED)
+    - Implement in_transit_sensor property (True when TRANSITIONING)
+    - Modified: 2026-01-14 by Flinn Mort
+
+REQ-004: Landing Gear Controller (Related: test_down_command_starts_transition)
+    - Initialize controller with three gear legs: nose, left, right
+    - Support commanding all legs simultaneously via command_all()
+    - Apply interlock rules from configuration
+    - Modified: 2026-01-14 by Flinn Mort
+
+REQ-005: Logging and Diagnostics (Related: test_log_leg_creates_log_message)
+    - Implement log_leg() method to output gear state information
+    - Include leg name, state, and sensor status in logs
+    - Support configurable logging level via config
+    - Write logs to landing_gear.log file
+    - Modified: 2026-01-23 by Flinn Mort
+
+REQ-006: Interactive Command Line Interface (Related: run_cockpit function)
+    - Provide interactive CLI with DOWN, UP, and QUIT commands
+    - Display current status of all three gear legs
+    - Advance simulation time by 0.5s increments on user input
+    - Support graceful exit via 'q' command or Ctrl+C
+    - Modified: 2026-01-23 by Flinn Mort
+
+REQ-007: Configuration Loading (Related: test_loads_values_from_json, test_defaults_when_missing)
+    - Load landing gear parameters from JSON configuration file
+    - Support timing configuration (deploy_time_s, retract_time_s)
+    - Support interlock configuration (allow_down_from, allow_up_from)
+    - Support logging level configuration
+    - Apply default values when configuration is missing
+    - Modified: 2026-01-14 by Flinn Mort
+"""
+
 from enum import Enum, auto
 from dataclasses import dataclass
 from config_loader import load_config, Config
-import time
 import logging
 
 class GearState(Enum):
